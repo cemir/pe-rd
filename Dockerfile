@@ -2,10 +2,21 @@ FROM rundeck/rundeck:4.1.0
 
 RUN sudo apt-get -y update \
   && sudo apt-get -y --no-install-recommends install ca-certificates python3-pip python3-setuptools \
-    python3-venv sshpass zip unzip \
-  # https://pypi.org/project/ansible/#history
+    python3-venv sshpass zip unzip jq\
   && sudo -H pip3 install --upgrade pip==20.3.4 \
   && sudo -H pip3 --no-cache-dir install ansible==2.9.22 \
   && sudo rm -rf /var/lib/apt/lists/* \
   && mkdir -p ${PROJECT_BASE}/etc/ \
   && sudo mkdir /etc/ansible
+
+
+# Install minio client
+RUN sudo wget -O - https://dl.min.io/client/mc/release/linux-amd64/mc > /tmp/mc && sudo mv /tmp/mc /usr/bin/mc && sudo chmod +x /usr/bin/mc
+
+# Install rundeck client
+RUN sudo mkdir -p /var/lib/rundeck-cli/ \
+    && wget -O - https://github.com/rundeck/rundeck-cli/releases/download/v2.0.1/rd-2.0.1.zip > /tmp/rd.zip \
+    && sudo unzip /tmp/rd.zip -d /var/lib/rundeck-cli/ \
+    && sudo ln -s /var/lib/rundeck-cli/rd-2.0.1/bin/rd /usr/bin/rd
+
+RUN sudo mkdir -p /home/rundeck/.mc
