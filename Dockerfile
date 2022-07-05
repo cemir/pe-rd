@@ -8,7 +8,7 @@ RUN sudo apt-get -y update \
   && sudo rm -rf /var/lib/apt/lists/* \ 
   && mkdir -p ${PROJECT_BASE}/etc/ \
   && sudo mkdir /etc/ansible \
-  && sudo mkdir /workspace && chown rundeck:root /workspace
+  && sudo mkdir /workspace && sudo chown rundeck:root /workspace
 
 # Install minio client
 RUN sudo wget -O - https://dl.min.io/client/mc/release/linux-amd64/mc > /tmp/mc && sudo mv /tmp/mc /usr/bin/mc && sudo chmod +x /usr/bin/mc
