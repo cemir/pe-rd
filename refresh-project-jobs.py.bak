@@ -1,0 +1,88 @@
+#!/usr/bin/env python
+# filename: refresh_project_jobs.py
+import sys
+import os
+import yaml
+import uuid
+import glob
+import hashlib
+from jinja2 import Template
+from jinja2 import Environment
+
+def current_path(): 
+    print("Current working directory before") 
+    print(os.getcwd()) 
+    print()
+
+os.chdir('/apps/rundeck/projects/EP-Foundry-Automation-LAB/scm/') 
+  
+current_path()
+
+def parse_yaml(opened_file):
+  data={}
+  try:
+    data = yaml.load(opened_file,Loader=yaml.SafeLoader)
+  except yaml.YAMLError as exc:
+    print(exc)
+    sys.exit(1)
+  return data
+
+env = Environment()
+
+data_path='project_data/'
+if len(sys.argv) > 1:
+  data_path=sys.argv[1]
+
+common={}
+with open(data_path+'common_data.yml', 'r') as common_data_file:
+  common=parse_yaml(common_data_file)
+print 'Loaded common data.'
+
+project_files=glob.glob(data_path+'projects/*.yml')
+standard_projects=[]
+for project_file_path in project_files:
+  with open(project_file_path,'r') as project_file:
+    standard_project=parse_yaml(project_file)
+    standard_projects.append(standard_project)
+    print 'Loaded '+project_file_path+'.'
+    
+
+
+for standard_project in standard_projects:
+  project_path=common['group_prefix']+standard_project['name']
+  if not os.path.exists(project_path):
+    print '+ Init: project '+project_path
+    os.makedirs(project_path)
+    for job in standard_project['jobs']:
+      template_path='job_templates/standard_projects/'+job['template']+'.yaml.j2'
+      template_basename=os.path.basename(template_path)
+      target_path=project_path+'/'+template_basename.replace('.j2','').replace('PROJECT',standard_project['name']).replace('ENV',job['env'])
+      print '\t+ Generating job configuration : ' + target_path + ' from template:' + template_path
+      with open(template_path) as tpl:
+        template=Template(tpl.read().decode('utf-8'))
+      job_uuid=str(uuid.uuid4())
+      with open(target_path, "w") as text_file:
+        text_file.write(template.render(job=job,common=common, job_uuid=job_uuid, name=standard_project['name']).encode('utf-8'))
+  else:
+    for job in standard_project['jobs']:
+      template_path='job_templates/standard_projects/'+job['template']+'.yaml.j2'
+      template_basename=os.path.basename(template_path)
+      target_path=project_path+'/'+template_basename.replace('.j2','').replace('PROJECT',standard_project['name']).replace('ENV',job['env'])
+      with open(template_path) as tpl:
+        template=Template(tpl.read().decode('utf-8'))
+      job_uuid=str(uuid.uuid4())
+      if os.path.exists(target_path):
+        with open(target_path, 'r') as target_file:
+          target_content=target_file.read()
+          target_yaml=yaml.load(target_content)
+          rendered_content=template.render(job=job,common=common, job_uuid=target_yaml[0]['uuid'],name=standard_project['name'])
+          if target_content==rendered_content:
+            print '\to Skipped: job '+target_path+' no change required'
+            continue
+          with open(target_path, "w") as text_file:
+            print '\t~ Refreshed: job '+target_path+'.'
+            text_file.write(rendered_content)
+      else:
+        with open(target_path, "w") as text_file:
+          print '\t~ Refreshed: job '+target_path+'.'
+          text_file.write(template.render(job=job,common=common, job_uuid=job_uuid,name=standard_project['name']).encode('utf-8'))

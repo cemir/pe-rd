@@ -5,7 +5,7 @@ RUN sudo apt-get -y update \
     python3-venv sshpass zip unzip jq\
   && sudo -H pip3 install --upgrade pip==20.3.4 \
   && sudo -H pip3 --no-cache-dir install ansible==2.9.22 \
-  && sudo rm -rf /var/lib/apt/lists/* \
+  && sudo rm -rf /var/lib/apt/lists/* \ 
   && mkdir -p ${PROJECT_BASE}/etc/ \
   && sudo mkdir /etc/ansible
 
@@ -19,4 +19,9 @@ RUN sudo mkdir -p /var/lib/rundeck-cli/ \
     && sudo unzip /tmp/rd.zip -d /var/lib/rundeck-cli/ \
     && sudo ln -s /var/lib/rundeck-cli/rd-2.0.1/bin/rd /usr/bin/rd
 
-RUN sudo mkdir -p /home/rundeck/.mc
+RUN mkdir -p /home/rundeck/.mc
+
+#install slack plugin
+RUN sudo wget -O - https://github.com/rundeck-plugins/slack-incoming-webhook-plugin/releases/download/v1.2.5/slack-incoming-webhook-plugin-1.2.5.jar > /tmp/slack-incoming-webhook-plugin-1.2.5.jar && sudo mv /tmp/slack-incoming-webhook-plugin-1.2.5.jar /home/rundeck/libext/slack-incoming-webhook-plugin-1.2.5.jar
+
+
