@@ -23,5 +23,3 @@ RUN mkdir -p /home/rundeck/.mc
 
 #install slack plugin
 RUN sudo wget -O - https://github.com/rundeck-plugins/slack-incoming-webhook-plugin/releases/download/v1.2.5/slack-incoming-webhook-plugin-1.2.5.jar > /tmp/slack-incoming-webhook-plugin-1.2.5.jar && sudo mv /tmp/slack-incoming-webhook-plugin-1.2.5.jar /home/rundeck/libext/slack-incoming-webhook-plugin-1.2.5.jar
-
-
