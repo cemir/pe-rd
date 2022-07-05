@@ -7,8 +7,8 @@ RUN sudo apt-get -y update \
   && sudo -H pip3 --no-cache-dir install ansible==2.9.22 \
   && sudo rm -rf /var/lib/apt/lists/* \ 
   && mkdir -p ${PROJECT_BASE}/etc/ \
-  && sudo mkdir /etc/ansible
-
+  && sudo mkdir /etc/ansible \
+  && sudo mkdir /workspace
 
 # Install minio client
 RUN sudo wget -O - https://dl.min.io/client/mc/release/linux-amd64/mc > /tmp/mc && sudo mv /tmp/mc /usr/bin/mc && sudo chmod +x /usr/bin/mc
